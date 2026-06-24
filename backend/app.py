@@ -1,5 +1,5 @@
 import time
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import chess
 
@@ -7,8 +7,24 @@ from engine.minimax import minimax_root
 from engine.evaluation import get_evaluation_breakdown, evaluate_board
 from engine.explain import explain_move
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="static",
+    static_url_path=""
+)
 CORS(app)
+
+@app.route("/")
+def serve():
+    return send_from_directory(app.static_folder, "index.html")
+
+@app.route("/<path:path>")
+def static_proxy(path):
+    try:
+        return send_from_directory(app.static_folder, path)
+    except:
+        return send_from_directory(app.static_folder, "index.html")
+
 
 @app.route("/new-game", methods=["POST"])
 def new_game():
